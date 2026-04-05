@@ -40,4 +40,26 @@ public class Timetable {
     public List<TrainingSession> getTrainingSessionsForDayAndTime(DayOfWeek dayOfWeek, TimeOfDay timeOfDay) {
         return timetable.getOrDefault(dayOfWeek, Collections.emptyMap()).getOrDefault(timeOfDay,Collections.emptyList());
     }
+
+    public Map<Coach, Integer> getCountByCoaches() {
+
+        Map<Coach, Integer> countByCoaches = new HashMap<>();
+
+        for (Map<TimeOfDay, List<TrainingSession>> dayMap : timetable.values()) {
+            for (List<TrainingSession> sessions : dayMap.values()) {
+                for (TrainingSession ts : sessions) {
+                    Coach coach = ts.getCoach();
+                    countByCoaches.merge(coach, 1, Integer::sum);
+                }
+            }
+        }
+
+        List<Map.Entry<Coach, Integer>> list = new ArrayList<>(countByCoaches.entrySet());
+        list.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+        Map<Coach, Integer> result = new LinkedHashMap<>();
+        for (Map.Entry<Coach, Integer> e : list) {
+            result.put(e.getKey(), e.getValue());
+        }
+        return result;
+    }
 }

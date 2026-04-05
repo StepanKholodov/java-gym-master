@@ -150,4 +150,78 @@ public class TimetableTest {
         Assert.assertEquals(2, result.size());
     }
 
+    @Test
+    void testGetCountByCoachesMultipleCoaches() {
+        Timetable timetable = new Timetable();
+        Coach coachIvanov = new Coach("Иванов", "Иван", "Иванович");
+        Coach coachPetrov = new Coach("Петров", "Петр", "Петрович");
+        Coach coachSidorov = new Coach("Сидоров", "Сидор", "Сидорович");
+        Group group = new Group("Фитнес", Age.ADULT, 60);
+
+        // Иванов: 3 тренировки
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coachIvanov, DayOfWeek.MONDAY, new TimeOfDay(10, 0)));
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coachIvanov, DayOfWeek.WEDNESDAY, new TimeOfDay(12, 0)));
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coachIvanov, DayOfWeek.FRIDAY, new TimeOfDay(15, 0)));
+        // Петров: 2 тренировки
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coachPetrov, DayOfWeek.TUESDAY, new TimeOfDay(11, 0)));
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coachPetrov, DayOfWeek.THURSDAY, new TimeOfDay(14, 0)));
+        // Сидоров: 1 тренировка
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coachSidorov, DayOfWeek.SATURDAY, new TimeOfDay(9, 0)));
+
+        Map<Coach, Integer> result = timetable.getCountByCoaches();
+
+        // Проверяем размер
+        Assert.assertEquals(3, result.size());
+
+        // Проверяем порядок: сначала Иванов (3), потом Петров (2), потом Сидоров (1)
+        List<Coach> coachesInOrder = new ArrayList<>(result.keySet());
+        Assert.assertEquals(coachIvanov, coachesInOrder.get(0));
+        Assert.assertEquals(coachPetrov, coachesInOrder.get(1));
+        Assert.assertEquals(coachSidorov, coachesInOrder.get(2));
+
+        // Проверяем значения
+        Assert.assertEquals(3, result.get(coachIvanov).intValue());
+        Assert.assertEquals(2, result.get(coachPetrov).intValue());
+        Assert.assertEquals(1, result.get(coachSidorov).intValue());
+    }
+
+    @Test
+    void testGetCountByCoachesEmptyTimetable() {
+        Timetable timetable = new Timetable(); // без добавления тренировок
+
+        Map<Coach, Integer> result = timetable.getCountByCoaches();
+
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testGetCountByCoachesSingleCoachMultipleSessions() {
+        //Один тренер, несколько тренировок в разное время и дни
+        Timetable timetable = new Timetable();
+        Coach coach = new Coach("Смирнова", "Анна", "Викторовна");
+        Group group = new Group("Йога", Age.ADULT, 75);
+
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coach, DayOfWeek.MONDAY, new TimeOfDay(8, 0)));
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coach, DayOfWeek.MONDAY, new TimeOfDay(18, 0)));
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coach, DayOfWeek.WEDNESDAY, new TimeOfDay(8, 0)));
+        timetable.addNewTrainingSession(
+                new TrainingSession(group, coach, DayOfWeek.FRIDAY, new TimeOfDay(10, 0)));
+
+        Map<Coach, Integer> result = timetable.getCountByCoaches();
+
+        Assert.assertEquals(1, result.size());
+        Assert.assertTrue(result.containsKey(coach));
+        Assert.assertEquals(4, result.get(coach).intValue());
+    }
+
 }
